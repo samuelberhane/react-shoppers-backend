@@ -2,33 +2,27 @@ const express = require("express");
 const app = express();
 const dotenv = require("dotenv");
 dotenv.config();
-const cors = require("cors");
-const { buffer } = require("micro");
-const morgan = require("morgan");
 let admin = require("firebase-admin");
+const cors = require("cors");
+const morgan = require("morgan");
 const bodyParser = require("body-parser");
-const endpointSecret = process.env.STRIPE_SIGNIN_SECRET;
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
-
+const endpointSecret = process.env.STRIPE_SIGNIN_SECRET;
 app.use(cors());
 
-const PORT = process.env.PORT || 8000;
+const PORT = process.env.PORT || 4242;
 
 // log request
 app.use(morgan("tiny"));
-
-// use body parser
-app.use(bodyParser.json({ extended: true }));
-app.use(bodyParser.urlencoded({ extended: true }));
 
 const firebaseApp = !admin.apps.length
   ? admin.initializeApp({
       credential: admin.credential.cert({
         type: "service_account",
         project_id: "shoppers-6413a",
-        private_key_id: process.env.FIREBASE_PRIVATE_KEY,
+        private_key_id: process.env.FIREBASE_SECRET_KEY,
         private_key:
-          "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDwRGSAR6Uib3dV\nNk7kIbedUimb/AHpno4WBfhdqvTCstASzl37ymnzibmKevNPj3IKQGVCmxw8QPbR\nRGduMK5vubFF1HjKfT+lKJK/n1PCiGteEsCF9YVpxoxiXBa21FhbRD8CDfPlB9GK\nUOUPdbTEi0s3TrtxpSj/0eJ1nfsb04NZDNPzIX4GU00H0FBL0WEP8P3vaCnpdHt6\n9iJ5nfLfeqs6CRgY4uJnMSOONqUSMyaPDcGX5KS2uJEAcBriAVwql6bgnzz32kT8\nNTtbyOqj5a+D0S7NUmhKcok2h+13gh9JChLeWofmmwlZ2AX1QJCvdPrea76JY+T+\nYtCZoyAXAgMBAAECggEAc6OPNXiGH61DY5VYYg9iVsshMKyZZQ4Fd88Wy0pJNF4o\nrCx76oBw/yCF1wM3EM9LBWkZ83VBITTpNi40k8HFawuWKTRKkLa4h66f9q9h+mp7\nNpNS6waQ2CiSD5Mf8Y4BGqgdpUj+3nglX2tw28B8qO4b3Po9WES0F3A2jQJkxe5X\n5//Yom1MmCZQsDy2M8fjW7pNmlLavOilzFqPgYtooDyckLo6GfgaP9hG59/fuNPi\nTxFVyZyQbqEhsyMJc0eFjAIgY7xCVqTuIUH7jyTifOaeLmLBoEIPT3s3hxXJuHrp\nDvkVfQ0HzDnjDQaQYMOfGGCqHzQK+TWxNQxkJlS50QKBgQD982EKr4D4VlR/CfRf\nDbOxQmZF7ga24uwqqxAPguq4nOGzWMzBgngPrNNhJ+mJe9oF0MQxg9yQ6hNXMhB2\nB2ZKci1wP8tyHwClKOJCMQGBvG+MbXXf7S+QLfIMoUH+4D6relYUkqJGYAL3QLah\nIvhtAifVikfpNrw4qYexqNiURwKBgQDyNL7bl440Q4eCJZmhe30aDIh8/RZurFX7\nfxBtwcOTcSc6THdncF0UuErZ3atoPM+ragzESw4vLmsznIbtzWWpvuC+ra2HWtvR\nRmNlyG/6jmUvoXEQI3Lw1iTOz/MUvwj403yBG+I5pq/4XOkbGc7zrsvxT13M9hgl\nVeTc0DsNsQKBgFdtDEGDfiEAh4JcyPZYXz5tH4x/j2wy3x8pWRQd+/SmfcUikwsj\ngXXUB8lw1iNwsfRClOh+/tYc35+rKqOXlI2YlTAJpl6Zcb1qP8qN2HjziGuN24DF\nxRQb3TKf6Xp3dNvP+AaJHLihoSPB8Z2zzlao4VHQk0UkhNP0+TQebsFNAoGBAJgo\n8s5ZxAipc/QbUwzT26AFx6leBj25HrtE9Dk/xXJXX+GMMGdXe+KMdNmyHQD7UyvJ\nEAQxctPJQafG6i1zIC8nr2GbEq06M2ah5cgHx/GMi50Eu1b8LjWHEtCqa3fZG/XW\nRx2FOvYk9d/93qQb7pvAcHdE+RTOdhTehU0DtFXBAoGARw/8MOXCe4mQoWjXkrhU\nJjXDLEDDQvjijA9claxI4MSp68zFy84f0BTCm6/yNB61S+/DZTBJ5SKe2LTzyoXC\naDIthLqdnk6VAJxJTiTOske5mEdYZ7W/mPlSgHu0TmOWLQ/XIdvYqbGiyLZG87VQ\nEyZZVsNVBn2nCpHur1XgXBY=\n-----END PRIVATE KEY-----\n",
+          "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCQSh3I55cwlRbV\nhV1aHRJuf8SmS9+8nbMBJqnMAzFvqKwBg0jGw24Vu+t6Vk5Kk1UMKclWUvI3gglz\ndiBliNjcJrrvkeW0YlaxFe5eeKgV1VcNMf5POaGcIrfU/iqgVBKQ6h3XBle1XFK+\n7mCT+r5w36q1kP7nqE74pVIvACX4jaq1heeFcXdvmmHb6YbjYNAn7BBs5lq8RTlv\n0eAhdDIbQkuU993R/4UjUuZEX7X5e+CL0oBzr6vNEMIDrr/C+MXCprNscBc0Kh59\n8ofOoXQVCJ34BIu63LcL22e02SqiF3ZvvvgT1HIFkvMsGThPrxLanEoVX5JPkKCo\nnacY4ucxAgMBAAECggEAIJxftvSAuz429vM5chB4BflinKMxYhPSTURLxAxEtBPP\nLFhbrnClBMyAIBo5f6lk42beVmBQ1jLRqALet5QCT1+BiHvVCrvfFA783OUwOB8L\nmbPe4lEIMZ23JrB7OdlGiPIg5GROlnLTUMvXkBpvyFsE3hxzQDBOCOx0cqL58f7b\nwglklp5sKZjuFU7Q2vyoOCQRZjvhWkP75SAzhx0AXWdOOLejje+49VdhAowFj+QN\nX1GOwCT6Lg7EyoINlOLG1RL7XqxOt1DjQu8HujP3Y/dpejNwufrPI/tBIkK/63PR\n0U/L7LRT/B1nEdJQMJDBuAge3vdTwtMX9ANRNxc68QKBgQDKxC902T0Lnwce7Rdo\nLAuLM6KhM6YWLe2u+bbSyN2KmUkN/41n27gILy/dCC52p3CCtA230I7Zgn9xJYKY\n591zh/Yf0yibAm4KoXL8yPBU8DL33MuRVFjW5rr3tkTtB+SkbyCKoEL3jPJBxc3U\nfqVjBOhzi3uxU0eu0SmNqG02ZwKBgQC2K7w8VXW0MmE27yah5lFF+joy1KPlUpZ7\n2uZuNqKN4wrOjjGg74RGdVdClRRqvNPC/tjvUoYPsrwhEyX/VH+RsjCIyQ5Ju8zm\nyiNpZvet1flvUzRdX+LqDU2zTc7COxNpdBzIE4m5PIbrn4NIqqcQQwoQ5xzd1lnD\n4i6Hu/IGpwKBgEo9GE8E9tfZaucE0awfbD6UMjgpS+cU+9Azt59nUc3cH6ZTabeb\n975vYGviAfkJhyUjvV4Oqy6yG+0WWcGYKzmQjynJyzUt55JW2F37SBshMtgTbCkS\no9BS/COUBZpvaGRYF6cJ1FsErPIt9RWXJQCjHGSprikXn8g+5qLqBsqDAoGBAJ81\n+AyO8BDt2vLE7nGetjc/ay/Tke4xUN2sQanfTBBPdrlxosQxsNxXX00Mt8xVfYm1\na2k2KX58yljpwFK3ycpO/oX9meQtIvYtgedzm1GtaZO3F1PoIoxF1ju369TrBpsq\nZKEkGkDvOkehoH6Yzuuye5CsPBlRZiCBhAMS6oKPAoGAWh6o5I+TjueAZo0eslex\nReSYgXGnMgeWGxmLB8BBZzTtoVVlyGYIP0bqFuER/AAEhyck2XOpzN2fxw2U3vKn\ncxAjxr9U7f/aGkzPVMYCuAo8YTjFjwWE5wdBJobU+cKfMU8yfrJZjNuean9jB7tT\n5nMM7ubYwk9FBdirZiMLXPs=\n-----END PRIVATE KEY-----\n",
         client_email:
           "firebase-adminsdk-utxe7@shoppers-6413a.iam.gserviceaccount.com",
         client_id: "104437718312042590602",
@@ -40,10 +34,9 @@ const firebaseApp = !admin.apps.length
           "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-utxe7%40shoppers-6413a.iam.gserviceaccount.com",
       }),
     })
-  : admin.app();
+  : admin.firebaseApp();
 
 const fulfilledOrder = async (session) => {
-  console.log("session", session);
   return firebaseApp
     .firestore()
     .collection("users")
@@ -58,7 +51,43 @@ const fulfilledOrder = async (session) => {
     });
 };
 
-// route
+// webhook request
+app.post(
+  "/webhook",
+  express.raw({ type: "application/json" }),
+  async (req, res) => {
+    let event;
+
+    try {
+      event = await stripe.webhooks.constructEvent(
+        req.body,
+        req.headers["stripe-signature"],
+        endpointSecret
+      );
+      // Extract the object from the event.
+      if (event.type === "checkout.session.completed") {
+        const session = event.data.object;
+        return fulfilledOrder(session)
+          .then(() => {
+            res.status(200);
+          })
+          .catch((error) =>
+            res.status(400).send("Webhook error" + error.message)
+          );
+      }
+
+      res.sendStatus(200);
+    } catch (err) {
+      console.log(`❌ Error message: ${err.message}`);
+      return res.status(400).send(`Webhook Error: ${err.message}`);
+    }
+  }
+);
+
+// use body parser
+app.use(bodyParser.json({ extended: true }));
+app.use(bodyParser.urlencoded({ extended: true }));
+
 // home
 app.get("/", (req, res) => {
   res.status(200).send("Welcome to Shoppers api.");
@@ -105,52 +134,11 @@ app.post(`/api/create-checkout-session`, async (req, res) => {
     },
     line_items: transformedItems,
     mode: "payment",
-    success_url: `${process.env.FRONTEND_URL}`,
+    success_url: `${process.env.FRONTEND_URL}/success`,
+
     cancel_url: `${process.env.FRONTEND_URL}/cart`,
   });
   res.status(200).json({ id: session.id });
 });
 
-// webhook
-app.post("/api/webhook", async (req, res) => {
-  if (endpointSecret) {
-    const sig = req.headers["stripe-signature"];
-    const requestBuffer = await buffer(req);
-    const payload = requestBuffer.toLocaleString();
-    let event = stripe.webhooks.constructEvent(payload, sig, endpointSecret);
-
-    console.log("event", event);
-
-    // Handle the event
-    switch (event.type) {
-      case "checkout.session.completed":
-        // Then define and call a function to handle the event checkout.session.completed
-        console.log("session completed");
-        const session = event.data.object;
-        console.log("session", session);
-
-      // return fulfilledOrder(session)
-      //   .then(() => {
-      //     res.status(200);
-      //   })
-      //   .catch((error) =>
-      //     res.status(400).send("Webhook error" + error.message)
-      //   );
-      default:
-        console.log(`Unhandled event type ${event.type}`);
-    }
-  }
-});
-
-app.listen(PORT, () => {
-  console.log(`running on port ${PORT}`);
-});
-
-module.exports = {
-  config: {
-    api: {
-      bodyParser: false,
-      externalResolver: true,
-    },
-  },
-};
+app.listen(PORT, () => console.log("Running on port 4242"));
