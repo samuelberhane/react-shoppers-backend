@@ -36,6 +36,7 @@ const firebaseApp = !admin.apps.length
     })
   : admin.firebaseApp();
 
+// store user orders in database
 const fulfilledOrder = async (session) => {
   return firebaseApp
     .firestore()
